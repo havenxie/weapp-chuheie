@@ -1,0 +1,148 @@
+<!--index.wxml-->
+<!-- <view class="container">
+  <view class="userinfo">
+    <button wx:if="{{!hasUserInfo && canIUse}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo"> 获取头像昵称 </button>
+    <block >
+      <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
+      <text class="userinfo-nickname">{{userInfo.nickName}}</text>
+    </block>
+  </view>
+  <view class="usermotto">
+    <text class="user-motto">{{motto}}</text>
+  </view>
+</view> -->
+<!-- <image class='userBg' src='../../imgs/img.jpg'></image> -->
+<!-- --------------------------------------------------------------------------------------- -->
+<!-- 底层主界面 -->
+<view class="pages" >
+  <view class="intoButton">
+    <block >
+      <image bindtap="intoButtonTap" class="intoButtonIcon" src="../../imgs/tap.png" mode="cover"></image>
+      <text class="buttonText">点击按钮支持</text>
+    </block>
+  </view>
+  <view class="usermotto">
+    <text class="user-motto">{{motto}}</text>
+  </view>
+</view>
+<!-- --------------------------------------------------------------------------------------- -->
+
+<!-- --------------------------------------------------------------------------------------- -->
+<!-- 自定义弹框开始 -->
+<view wx:if="{{showModel}}" class="model">
+  <view class="modelTitle">
+    获取微信授权信息
+  </view>
+  <view class="modelBody">微信登录需要获取您的用户信息，请前往设置</view>
+  <view class="btns">
+    <button open-type="getUserInfo" class="agree" bindgetuserinfo="agreeGetUser" lang="zh_CN">去设置</button>
+  </view>
+</view>
+<view wx:if="{{showModel}}" class="mask"></view>
+  <!-- 自定义弹框结束 -->
+<!-- --------------------------------------------------------------------------------------- -->
+
+<!-- --------------------------------------------------------------------------------------- -->
+<!-- 自定义选择器开始 -->
+<view wx:if="{{showPicker}}" class="modelPicker">
+  <!-- 关闭按钮 -->
+  <view class='close' bindtap="closeQuyu"> × </view>
+  <!-- 选择区域 -->
+  <view class="selectArea">
+    <text class="selectTxt">区 域</text>
+    <view class="selectBox {{showQuyuItems ? 'borderRed' : ''}}" bindtap='bindShowQuyuItems'>
+      <view><!--下拉框 -->
+        <text>{{quyu == '' ? "请选择区域" : quyu}}</text>
+        <text class='xiala'>▼</text>
+      </view>
+      <!-- 下拉需要显示的列表 -->
+      <scroll-view scroll-y="true" style="height: 500%" class="selectItems" wx:if="{{showQuyuItems}}">
+          <view class="selectItem" catchtap="selectQuyu" data-name="重庆分店">重庆分店</view>
+          <view class="selectItem" catchtap="selectQuyu" data-name="东莞南城分店">东莞南城分店</view>
+          <view class="selectItem" catchtap="selectQuyu" data-name="东莞总店">东莞总店</view>
+          <view class="selectItem" catchtap="selectQuyu" data-name="东莞总店">东莞总店2</view>
+      </scroll-view>
+    </view>
+  </view>
+  <!-- 选择街道 -->
+  <view class="selectArea"  wx:if="{{!showQuyuItems && (quyu != '')}}">
+    <text class='selectTxt'>镇 街</text>
+    <view class="selectBox" bindtap='bindShowZhenjieItems'>
+      <view><!--下拉框-->
+        <text>{{zhenjie == '' ? "请选择镇街" : zhenjie}}</text>
+        <text class='xiala'>▼</text>        
+      </view>
+      <!-- 下拉需要显示的列表 -->
+      <scroll-view scroll-y="true" style="height: 400%" class="selectItems" wx:if="{{showZhenjieItems}}">
+          <view class="selectItem" catchtap="selectZhenjie" data-name="街道1">街道1</view>
+          <view class="selectItem" catchtap="selectZhenjie" data-name="街道2">街道2</view>
+          <view class="selectItem" catchtap="selectZhenjie" data-name="街道3">街道3</view>
+          <view class="selectItem" catchtap="selectZhenjie" data-name="街道4">街道4</view>
+      </scroll-view>
+    </view>
+  </view>
+  <!-- 显示文本 -->
+  <view class='tips1'>提交资料后您将参与抽奖哦</view>
+  <view class='tips2'>您提供的真实信息，将使我们的统计数据真实有效，避免刷票行为产生</view>
+  <!-- 提交按钮 -->
+  <button  disabled="{{(quyu == '') || (zhenjie == '')}}" bindtap='submit' class='submit'>提交</button>
+</view>
+<!-- 背景半透明状态 -->
+
+<view wx:if="{{showPicker}}" class="mask"></view>
+<!-- 自定义选择器结束 -->
+<!-- --------------------------------------------------------------------------------------- -->
+
+<!-- --------------------------------------------------------------------------------------- -->
+<!-- 倡议书开始 -->
+<view wx:if="{{showChangyi}}" class="modelChangyi">
+  <view class="titleChangyi">倡议书</view>
+  <scroll-view scroll-y="true" bindscrolltolower="toBottom" class="BodyChangyi">
+    <text class="bodyTxt" decode="{{true}}">尊敬的市民朋友:
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您好!
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当前，按照中央、省委和市委扫黑除恶专项斗争的工作部署，我市各地各部门紧紧围绕“中央决定、扫黑除恶、众剑行动、拔根务尽”主题，深入开展扫黑除恶专项斗争。为进一步依法打击涉黑涉恶违法犯罪行为，以“零容忍”态度，坚决打赢扫黑除恶专项斗争攻坚战，努力把清城建设成为全省最安全稳定、最公平公正、法制环境最好的地区之一。我们向广大市民倡议:
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;让我们一起积极行动起来，拿起您手中的法律武器，发挥法制力量，及时发现、检举、揭发、控告下列涉黑恶违法犯罪活动:
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;一是威胁政治安全特别是政权安全、制度安全以及向政治领域渗透的黑恶势力；
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;二是把持基层政权、操纵破坏基层换届。。。
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;其他涉黑涉恶违法犯罪。 
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您可以向市扫黑除恶专项斗争领导小组办公室举报涉黑涉恶犯罪的线索，举报电话：110,0663-8263211（工作时间）；举报邮箱：jyshbdjz@163.com；举报地址：揭阳市榕城区临江北路市机关大院2号楼313室打击整治组。
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;对举报、提供线索的热心市民，我们将严格保密，依法保护。线索经查证属实的，将按照有关规定于以最高50万元奖励。对包庇、纵容违法犯罪分子或恶意举报、诬告陷害他人的，将依法追究法律责任；对举报人进行报复的，将依法从严、从重惩处。</text>
+    <view class='footTxt'>
+        <text>中共揭阳市委政法委员会</text>
+        <text>2018年8月21日</text>
+    </view>
+  </scroll-view>
+  <button disabled="{{!toBottom}}" bindtap='support' class="submit">我支持</button>
+</view>
+<view  wx:if="{{showChangyi}}" class="mask"></view>
+<!-- 倡议书结束 -->
+<!-- --------------------------------------------------------------------------------------- -->
+
+<!-- --------------------------------------------------------------------------------------- -->
+<!-- 自定义分享弹窗开始 -->
+<view wx:if="{{showShare}}" class="modelShare">
+  <view class='close' bindtap="closeShare"> × </view>
+  <view class="txtShare">感谢您热心支持参与扫黑除恶众剑行动，请您明天再来哦！</view>
+  <button class="iknownBtn myBtn" bindtap='closeShare'>我知道了</button>
+  <button class="haoyouBth myBtn" open-type="share">分享给好友</button>
+  <button class='quanBtn myBtn' bindtap='quanShare'>分享到朋友圈</button>
+</view>
+<view wx:if="{{showShare}}" class="mask"></view>
+  <!-- 自定义分享弹窗结束 -->
+<!-- --------------------------------------------------------------------------------------- -->
+
+
+<!-- --------------------------------------------------------------------------------------- -->
+<!-- 生成的海报开始 -->
+<view class='imagePathBox' hidden="{{maskHidden == false}}">
+  <image src="{{imagePath}}" class='shengcheng'></image>
+  <button class='baocun' bindtap='baocun'>保存相册，分享到朋友圈</button>
+</view>
+<view hidden="{{maskHidden == false}}" class="mask"></view> 
+
+<view class="canvas-box">
+  <canvas  style="width: 375px;height: 667px;position:fixed;top:9999px" canvas-id="mycanvas"/>
+</view>  
+<!-- 生成的海报结束 -->
+<!-- --------------------------------------------------------------------------------------- -->
+
