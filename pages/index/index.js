@@ -5,7 +5,7 @@ const app = getApp()
 
 Page({
   data: {
-    motto: 'Hello World',
+    motto: '',
     userInfo: {},
     hasUserInfo: false,
     canIUse: wx.canIUse('button.open-type.getUserInfo'),
@@ -23,7 +23,9 @@ Page({
     maskHidden: false,
     name: "",
     touxiang: "",
-    code: "E7A93C"
+    indexCode: 0,
+    joined: 0,
+    openid: '',
   },
   closeShare() {
     this.setData({
@@ -89,19 +91,8 @@ Page({
     this.setData({
       showChangyi: false
     })
-    //发起网略请求
-    console.log(this.data.quyu)
-    console.log(this.data.zhenjie)
-    if(true) {//投票成功
-      console.log("投票成功了~~~")
-      this.setData({
-        showShare: true
-      })
-
-    } else {
-      console.log("投票失败了~~~")
-
-    }
+    // this.intoButtonTap()
+    
   },
   //事件处理函数
   intoButtonTap: function() {
@@ -123,27 +114,19 @@ Page({
               //用户已经授权
               //将code提交给后台 检查是否已经投票成功 如果成功就生成海报 如果没投票就弹出选择呢区域的模态框              
               console.log("开始将code提交给后台")
-              console.log(app.globalData )
-              let hash = util.hexMD5("saoheichue2018abc")
-              console.log(hash)
               //向后台传输数据
-              //that.getOP(app.globalData.userInfo)
+              that.getOP(app.globalData.userInfo)
               wx.showToast({
                 title: '验证中...',
                 icon: 'loading',
-                duration: 1000
+                duration: 1000,
               });
-              if(true) {
-                console.log("已经投票了")
-                //生成海报
-                that.setData({
-                  showShare: true
-                })
-              } else {
-                that.setData({
-                  showPicker: true
-                })
-              }
+              console.log("已经投票了")
+              //生成海报
+              that.setData({
+                showShare: true
+              })
+              
             } else {//没有授权需要弹框
               this.setData({
                 showModel: true
@@ -173,7 +156,7 @@ Page({
 
   //获取用户授权信息新接口
   agreeGetUser: function (e) {
-    console.log(e)
+    // console.log(e)
     this.setData({
       showModel: false
     })
@@ -189,42 +172,60 @@ Page({
         duration: 1500,
       })
     }
-    console.log(321)
     this.setData({//让用户选择区域
       showPicker: true
     })
   },
+    postArea: function (res) {//提交用户信息 获取用户id
+      let that = this
+      let thisopenid = this.data.openid
+      let thisaddr = this.data.zhenjie
+      console.log(thisopenid)
+      console.log(thisaddr)
+      wx.request({
+        url: 'https://qx.sj0763.com/2018/wxapp_saoheichue/api.updateaddr.php',
+        method: 'POST',
+        header: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
+        data: {
+          "openid": thisopenid,
+          "addr": encodeURI(encodeURI(thisaddr)),
+          "hash": util.hexMD5("saoheichue2018" + encodeURI(encodeURI(thisaddr))+ thisopenid )
+        },
+      success: function (res) {
+        
+        console.log(res)
+        if(res.data.code == 200) {
+        } else {
+          console.log("接口访问错误~")
+        }
 
+      }
+    })
+  },
   getOP: function (res) {//提交用户信息 获取用户id
     let that = this
     let userInfo = res
     app.globalData.userInfo = userInfo
+    console.log(app.globalData.code)
+    console.log(util.hexMD5(app.globalData.code))
     wx.request({
-      url: 'https://xcx.xiancaijun.cn/tigerlogin/tgLogin',
-      method: 'post',
+      url: 'https://qx.sj0763.com/2018/wxapp_saoheichue/api.reg2.php',
+      method: 'POST',
+      header: { 'content-type': 'application/x-www-form-urlencoded' },
       data: {
         "code": app.globalData.code,
-        'userInfo': userInfo
+        "hash": util.hexMD5("saoheichue2018" + app.globalData.code)
       },
       success: function (res) {
-        if (res.data.respcode == '0') {
-          app.globalData.userId = res.data.uid
-          app.globalData.keys = res.data.keys
-          app.globalData.access = res.data.access
-          that.getBook()
-          that.shareInfo()
-          if (that.data.cid) {
-            wx.navigateTo({
-              url: '/pages/course/course?cid=' + that.data.cid
-            })
-          }
-        } else if (res.data.respcode == '15') {
-          wx.hideLoading()
-          wx.showToast({
-            title: '没有授权，不能进入小程序',
-            icon: 'none',
-            duration: 2000
+        console.log(res)
+        if(res.data.code == 200) {
+          that.setData({
+            joined: res.data.joined,
+            indexCode : res.data.id,
+            openid: res.data.openid
           })
+        } else {
+          console.log("接口访问错误~")
         }
 
       }
@@ -278,69 +279,69 @@ Page({
   createNewImg: function () {
     var that = this;
     var context = wx.createCanvasContext('mycanvas');
-    context.setFillStyle("#ffe200")
-    context.fillRect(0, 0, 375, 667)
-    var path = "../../imgs/gobg.png";
+    context.setFillStyle("#ffffff")
+    context.fillRect(0, 0, 600, 580)
+    var path = "../../imgs/share.png";
     //将模板图片绘制到canvas,在开发工具中drawImage()函数有问题，不显示图片
     //不知道是什么原因，手机环境能正常显示
-    context.drawImage(path, 0, 0, 375, 183);
+    context.drawImage(path, -120, 0, 600, 580);
     var path1 = that.data.touxiang;
     console.log(path1, "path1")
     //将模板图片绘制到canvas,在开发工具中drawImage()函数有问题，不显示图片
     var path2 = "../../imgs/tap.png";
-    var path3 = "../../imgs/heise.png";
+    var path3 = "../../imgs/index.png";
     var path4 = "../../imgs/wenziBg.png";
-    var path5 = "/imgs/wenxin.png";
+
     //context.drawImage(path2, 126, 186, 120, 120);
     //不知道是什么原因，手机环境能正常显示
     // context.save(); // 保存当前context的状态
 
-    var name = that.data.name;
-    //绘制名字
-    context.setFontSize(24);
-    context.setFillStyle('#333333');
-    context.setTextAlign('center');
-    context.fillText(name, 185, 340);
-    context.stroke();
-    //绘制一起吃面标语
-    context.setFontSize(14);
-    context.setFillStyle('#333333');
-    context.setTextAlign('center');
-    context.fillText("邀请你一起去吃面", 185, 370);
-    context.stroke();
+    // var name = that.data.name;
+    // //绘制名字
+    // context.setFontSize(24);
+    // context.setFillStyle('#333333');
+    // context.setTextAlign('center');
+    // context.fillText(name, 185, 340);
+    // context.stroke();
+    // //绘制一起吃面标语
+    // context.setFontSize(14);
+    // context.setFillStyle('#333333');
+    // context.setTextAlign('center');
+    // context.fillText("邀请你一起去吃面", 185, 370);
+    // context.stroke();
     //绘制验证码背景
-    context.drawImage(path3, 48, 390, 280, 84);
+    context.drawImage(path3, 54, 300, 280, 64);
     //绘制code码
-    context.setFontSize(40);
-    context.setFillStyle('#ffe200');
+    context.setFontSize(34);
+    context.setFillStyle('#333');
     context.setTextAlign('center');
-    context.fillText(that.data.code, 185, 435);
+    context.fillText(that.data.indexCode, 220, 344);
     context.stroke();
-    //绘制左下角文字背景图
-    context.drawImage(path4, 25, 520, 184, 82);
-    context.setFontSize(12);
-    context.setFillStyle('#333');
-    context.setTextAlign('left');
-    context.fillText("进入小程序输入朋友的邀请", 35, 540);
-    context.stroke();
-    context.setFontSize(12);
-    context.setFillStyle('#333');
-    context.setTextAlign('left');
-    context.fillText("码，朋友和你各自获得通用", 35, 560);
-    context.stroke();
-    context.setFontSize(12);
-    context.setFillStyle('#333');
-    context.setTextAlign('left');
-    context.fillText("优惠券1张哦~", 35, 580);
-    context.stroke();
-    //绘制右下角扫码提示语
-    context.drawImage(path5, 248, 578, 90, 25);
+    // //绘制左下角文字背景图
+    // context.drawImage(path4, 25, 520, 184, 82);
+    // context.setFontSize(12);
+    // context.setFillStyle('#333');
+    // context.setTextAlign('left');
+    // context.fillText("进入小程序输入朋友的邀请", 35, 540);
+    // context.stroke();
+    // context.setFontSize(12);
+    // context.setFillStyle('#333');
+    // context.setTextAlign('left');
+    // context.fillText("码，朋友和你各自获得通用", 35, 560);
+    // context.stroke();
+    // context.setFontSize(12);
+    // context.setFillStyle('#333');
+    // context.setTextAlign('left');
+    // context.fillText("优惠券1张哦~", 35, 580);
+    // context.stroke();
+    // //绘制右下角扫码提示语
+    // context.drawImage(path5, 248, 578, 90, 25);
     //绘制头像
-    context.arc(186, 246, 50, 0, 2 * Math.PI) //画出圆
-    context.strokeStyle = "#ffe200";
-    context.clip(); //裁剪上面的圆形
-    context.drawImage(path1, 136, 196, 100, 100); // 在刚刚裁剪的园上画图
-    context.draw();
+    // context.arc(186, 246, 50, 0, 2 * Math.PI) //画出圆
+    // context.strokeStyle = "#ffe200";
+    // context.clip(); //裁剪上面的圆形
+    // context.drawImage(path1, 136, 196, 100, 100); // 在刚刚裁剪的园上画图
+     context.draw();
     //将生成好的图片保存到本地，需要延迟一会，绘制期间耗时
     setTimeout(function () {
       wx.canvasToTempFilePath({
@@ -471,7 +472,7 @@ Page({
    */
   onShareAppMessage: function (res) {
     return {
-      title: "清城向黑恶势力说不",
+      title: "清城发布",
       success: function (res) {
         console.log(res, "转发成功")
       },

@@ -1,12 +1,11 @@
 {
   "pages":[
-    "pages/index/index",
-    "pages/logs/logs"
+    "pages/index/index"
   ],
   "window":{
     "backgroundTextStyle":"light",
     "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "清城向黑恶势力说不",
+    "navigationBarTitleText": "清城发布",
     "navigationBarTextStyle":"black",
     "navigationStyle": "custom",
     "backgroundColor": "#fff"

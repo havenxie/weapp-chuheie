@@ -11,7 +11,7 @@ App({
     // 登录
     wx.login({
       success: res => {
-        console.log(1)
+        // console.log(1)
         // 发送 res.code 到后台换取 openId, sessionKey, unionId
         
         // if(res.code) {
@@ -51,8 +51,8 @@ App({
    // 获取用户信息
     wx.getSetting({
       success: res => {
-        console.log(2)
-        console.log(res)
+        // console.log(2)
+        // console.log(res)
         if (res.authSetting['scope.userInfo']) {
           console.log(3)
           // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
