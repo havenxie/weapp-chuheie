@@ -382,7 +382,14 @@ Page({
             console.log(11111)
           }
         })
+      },
+      fail: function() {
+        that.setData({
+          maskHidden: false,
+          canvasHidden: false
+        })
       }
+
     })
   },
   //点击生成

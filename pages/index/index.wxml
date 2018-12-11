@@ -119,7 +119,7 @@
   <view class="txtShare">感谢您热心支持参与,请明天再来吧！</view>
   <button class="iknownBtn myBtn" bindtap='closeShare'>我知道了</button>
   <button class="haoyouBth myBtn" open-type="share">分享给好友</button>
-  <button class='quanBtn myBtn' bindtap='quanShare'>分享到朋友圈</button>
+  <button class='quanBtn myBtn' bindtap='quanShare'>生成海报</button>
 </view>
 <view wx:if="{{showShare}}" class="mask"></view>
   <!-- 自定义分享弹窗结束 -->
@@ -130,7 +130,7 @@
 <!-- 生成的海报开始 -->
 <view class='imagePathBox' hidden="{{maskHidden == false}}">
   <image src="{{imagePath}}" class='shengcheng'></image>
-  <button class='baocun' bindtap='baocun'>保存相册，分享到朋友圈</button>
+  <button class='baocun' bindtap='baocun'>保存相册(保存后可发朋友圈)</button>
 </view>
 <view hidden="{{maskHidden == false}}" class="mask"></view> 
 
