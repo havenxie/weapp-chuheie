@@ -17,6 +17,9 @@ Page({
     showQuyuItems: false,
     zhenjie: "",
     showZhenjieItems: false,
+    myName : "",
+    phoneNum: "",
+    showNext: false,
     showChangyi: false,
     toBottom: false,
     showShare: false,
@@ -26,7 +29,9 @@ Page({
     indexCode: 0,
     joined: 0,
     openid: '',
+    animationMiddleHeaderItem: {}
   },
+  
   closeShare() {
     this.setData({
       showShare: false
@@ -73,13 +78,32 @@ Page({
       showZhenjieItems: false
     })
   },
-  submit() {//用户提交了选择的位置区域
+  inputName(e) {
+    this.setData({
+      myName: e.detail.value
+    })
+  },
+  inputNum(e) {
+    var num = e.detail.value
+    if(num.length == 11) {
+      this.setData({
+        showNext: true,
+        phoneNum: num
+      })
+    } else {
+      this.setData({
+        showNext: false,
+      })
+    }
+  },
+  submit() {//用户点击了下一步
     this.setData({
       showPicker: false
     })
     this.setData({
       selectArea: true,
-      showChangyi: true
+      showChangyi: true,
+      toBottom: false
     })
   },
   toBottom() {
@@ -87,12 +111,125 @@ Page({
       toBottom: true
     })
   },
-  support() {
+  support() {//用户提交信息参与活动
+  //应该在这里进行数据的有效性验证
     this.setData({
       showChangyi: false
     })
-    // this.intoButtonTap()
-    
+    this.postArea()
+    //this.intoButtonTap()
+  },
+  postArea: function (res) {//提交用户信息 获取用户id
+    let that = this
+    let thisaddr = this.data.zhenjie
+    let name = this.data.myName
+    let nickname = this.data.name
+    let thisopenid = this.data.openid
+    let phonenum = this.data.phoneNum
+    // console.log("saoheichue2018")
+    // console.log(thisaddr)
+    // console.log("傻瓜")
+    // console.log(nickname)
+    // console.log(thisopenid)
+    // console.log("18056113210")
+     console.log("saoheichue2018" + thisaddr + name + nickname + thisopenid + phonenum)
+    // console.log(util.hexMD5("saoheichue2018" + thisaddr + name + nickname + thisopenid + phonenum))
+    wx.request({
+      url: 'https://qx.sj0763.com/2018/wxapp_saoheichue/api.updateinfo.php',
+      method: 'POST',
+      header: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
+      data: {
+        "addr": thisaddr,
+        "name": name,
+        "nick": nickname,
+        "openid": thisopenid,
+        "phone": phonenum,
+        "hash": util.hexMD5("saoheichue2018" + thisaddr + name + nickname + thisopenid + phonenum)
+      },
+      success: function (res) {
+        console.log(res)
+        if (res.data.code == 200) {
+          console.log('提交用户信息成功')
+          var zhongjiang = res.data.winning
+          if (zhongjiang == '0') {//很遗憾没有中奖
+            wx.showModal({
+              content: '很遗憾，您没有中奖~~ 快去点击心跳分享给好友吧~',
+              showCancel: false,
+              confirmText: '好的',
+              confirmColor: '#333',
+              success: function (res) {
+                if (res.confirm) {
+                  // console.log('用户点击了确定')
+                } else {
+                  // console.log('用户点击了取消')
+                }
+              }
+            })
+          }
+          else {//小伙伴中奖了    
+            wx.showModal({
+              content: '你是幸运女神附体了吗？你中了：' + zhongjiang + ' 我们之后会短信联系你， 快去点击心跳分享给好友吧~',
+              showCancel: false,
+              confirmText: '好的',
+              confirmColor: '#333',
+              success: function (res) {
+                if (res.confirm) {
+                  // console.log('用户点击确定');
+                } else {
+                  // console.log('用户点击取消')
+                }
+              }
+            })
+          }
+        } else {
+          console.log("接口访问错误~")
+        }
+      }
+    })
+  },
+  getOP: function (res) {//提交用户信息 获取用户id
+    let that = this
+    let userInfo = res
+    app.globalData.userInfo = userInfo
+    // console.log(app.globalData.code)
+    // console.log(util.hexMD5(app.globalData.code))
+    wx.showToast({
+      title: '验证中...',
+      icon: 'loading',
+      duration: 1000,
+    });
+    wx.request({
+      url: 'https://qx.sj0763.com/2018/wxapp_saoheichue/api.reg2.php',
+      method: 'POST',
+      header: { 'content-type': 'application/x-www-form-urlencoded' },
+      data: {
+        "code": app.globalData.code,
+        "hash": util.hexMD5("saoheichue2018" + app.globalData.code)
+      },
+      success: function (res) {
+        console.log(res)
+        if (res.data.code == 200) {
+          that.setData({
+            joined: res.data.joined,
+            indexCode: res.data.id,
+            openid: res.data.openid
+          })
+          if (res.data.joined == 1) {//已经投票过了
+            console.log("已经投票了")
+            that.setData({//生成海报
+              showShare: true
+            })
+          } else {//还没有投票
+            console.log('还没有投票')
+            that.setData({//需要打开获取信息的弹窗
+              showPicker: true
+            })
+          }
+        } else {
+          console.log("接口访问错误~")
+        }
+      }
+    })
   },
   //事件处理函数
   intoButtonTap: function() {
@@ -108,25 +245,10 @@ Page({
           success: (res) => {
             //判断用户已经授权。不需要弹框
             if (res.authSetting['scope.userInfo']) {
-              that.setData({
-                showModel: false
-              })
               //用户已经授权
               //将code提交给后台 检查是否已经投票成功 如果成功就生成海报 如果没投票就弹出选择呢区域的模态框              
               console.log("开始将code提交给后台")
-              //向后台传输数据
               that.getOP(app.globalData.userInfo)
-              wx.showToast({
-                title: '验证中...',
-                icon: 'loading',
-                duration: 1000,
-              });
-              console.log("已经投票了")
-              //生成海报
-              that.setData({
-                showShare: true
-              })
-              
             } else {//没有授权需要弹框
               this.setData({
                 showModel: true
@@ -142,11 +264,10 @@ Page({
             })
           }
         })
-
       },
       fail: function () {
         wx.showToast({
-          title: '系统提示:网络错误',
+          title: '接口调用失败，请联系电话18056113210',
           icon: 'warn',
           duration: 1500,
         })
@@ -172,96 +293,46 @@ Page({
         duration: 1500,
       })
     }
-    this.setData({//让用户选择区域
-      showPicker: true
-    })
-  },
-    postArea: function (res) {//提交用户信息 获取用户id
-      let that = this
-      let thisopenid = this.data.openid
-      let thisaddr = this.data.zhenjie
-      console.log(thisopenid)
-      console.log(thisaddr)
-      wx.request({
-        url: 'https://qx.sj0763.com/2018/wxapp_saoheichue/api.updateaddr.php',
-        method: 'POST',
-        header: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
-        data: {
-          "openid": thisopenid,
-          "addr": encodeURI(encodeURI(thisaddr)),
-          "hash": util.hexMD5("saoheichue2018" + encodeURI(encodeURI(thisaddr))+ thisopenid )
-        },
-      success: function (res) {
-        
-        console.log(res)
-        if(res.data.code == 200) {
-        } else {
-          console.log("接口访问错误~")
-        }
 
-      }
-    })
   },
-  getOP: function (res) {//提交用户信息 获取用户id
-    let that = this
-    let userInfo = res
-    app.globalData.userInfo = userInfo
-    console.log(app.globalData.code)
-    console.log(util.hexMD5(app.globalData.code))
-    wx.request({
-      url: 'https://qx.sj0763.com/2018/wxapp_saoheichue/api.reg2.php',
-      method: 'POST',
-      header: { 'content-type': 'application/x-www-form-urlencoded' },
-      data: {
-        "code": app.globalData.code,
-        "hash": util.hexMD5("saoheichue2018" + app.globalData.code)
-      },
-      success: function (res) {
-        console.log(res)
-        if(res.data.code == 200) {
-          that.setData({
-            joined: res.data.joined,
-            indexCode : res.data.id,
-            openid: res.data.openid
-          })
-        } else {
-          console.log("接口访问错误~")
-        }
 
-      }
-    })
-  },
   onLoad: function () {
-    if (app.globalData.userInfo) {
-      console.log(4)
-      this.setData({
-        userInfo: app.globalData.userInfo,
-        hasUserInfo: true
-      })
-    } else if (this.data.canIUse){
-      console.log(5)
-      // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
-      // 所以此处加入 callback 以防止这种情况
-      app.userInfoReadyCallback = res => {
-        console.log(6)
-        this.setData({
-          userInfo: res.userInfo,
-          hasUserInfo: true
-        })
+    var circleCount = 0;
+    // 心跳的动画部分开始---------------------------------------------------------------------
+    this.animationMiddleHeaderItem = wx.createAnimation({
+      duration: 1000,    // 以毫秒为单位  
+      timingFunction: 'ease',
+      delay: 20,
+      transformOrigin: '50% 80% 0',
+      success: function (res) {
       }
-    } else {
-      // 在没有 open-type=getUserInfo 版本的兼容处理
-      console.log(7)
-      wx.getUserInfo({
-        success: res => {
-          app.globalData.userInfo = res.userInfo
-          this.setData({
-            userInfo: res.userInfo,
-            hasUserInfo: true
-          })
-        }
-      })
-    }
+    });
+    setInterval(function () {
+      if (circleCount % 2 == 0) {
+        this.animationMiddleHeaderItem.scale(1.2).step();
+      } else {
+        this.animationMiddleHeaderItem.scale(0.8).step();
+      }
+
+      this.setData({
+        animationMiddleHeaderItem: this.animationMiddleHeaderItem.export()  //输出动画
+      });
+
+      circleCount++;
+      if (circleCount == 1000) {
+        circleCount = 0;
+      }
+    }.bind(this), 1000);
+    //心跳的动画部分结束---------------------------------------------------------------------
+
+    this.myGetUserSQInfo({
+      success: res => {
+        console.log(1)
+      },
+      fail: res => {
+        console.log(2)
+      }
+    })
   },
   getUserInfo: function(e) {
     console.log(e)
@@ -271,26 +342,74 @@ Page({
       hasUserInfo: true
     })
   },
-
-
-
- 
+  //随机数生成器
+  RandomNumBoth: function (Min, Max) {
+    var Range = Max - Min;
+    var Rand = Math.random();
+    var num = Min + Math.round(Rand * Range); //四舍五入
+    return num;
+  },
+  //点击生成海报
+  quanShare: function (e) {
+    var that = this;
+    this.setData({
+      showShare: false
+    });
+    wx.showToast({
+      title: '获取专属祝福语并生成海报中...',
+      icon: 'loading',
+      duration: 2000
+    });
+    wx.request({
+      url: 'https://qx.sj0763.com/2018/wxapp_saoheichue/api.newyear_toast.php',
+      method: 'GET',
+      header: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
+      success: function (res) {
+        // console.log(res)
+        if (res.data.code == 200 && res.data.toasts.length > 0) {
+          // console.log('成功获取到数据')
+          // for(let i = 0; i < res.data.toasts.length; i++) {
+          //   console.log(res.data.toasts[i])
+          // }
+          let randnum = that.RandomNumBoth(0, res.data.toasts.length - 1)
+          let randStr = res.data.toasts[randnum]
+          let strs = []
+          let i = Math.floor(randStr.length / 18)
+          let j = randStr.length % 18
+          let t = 0
+          for(t = 0; t < i; t+=1) {
+            strs.push(randStr.substring(t*18, (t + 1) * 18))
+          }
+          strs.push(randStr.substring(t * 18))
+          setTimeout(function () {
+            wx.hideToast()
+            that.createNewImg(t+1, strs);
+            that.setData({
+              maskHidden: true
+            });
+          }, 2000)
+        } else {
+          console.log("接口访问错误~")
+        }
+      }
+    })
+  },
   //将canvas转换为图片保存到本地，然后将图片路径传给image图片的src
-  createNewImg: function () {
+  createNewImg: function (t, strs) {
     var that = this;
     var context = wx.createCanvasContext('mycanvas');
     context.setFillStyle("#ffffff")
-    context.fillRect(0, 0, 600, 580)
-    var path = "../../imgs/share.png";
+    context.fillRect(0, 0, 850, 1024)
+    var path = "../../imgs/savepng.png";
     //将模板图片绘制到canvas,在开发工具中drawImage()函数有问题，不显示图片
     //不知道是什么原因，手机环境能正常显示
-    context.drawImage(path, -120, 0, 600, 580);
-    var path1 = that.data.touxiang;
-    console.log(path1, "path1")
-    //将模板图片绘制到canvas,在开发工具中drawImage()函数有问题，不显示图片
-    var path2 = "../../imgs/tap.png";
-    var path3 = "../../imgs/index.png";
-    var path4 = "../../imgs/wenziBg.png";
+    context.drawImage(path, -0, 0, 850, 1024);
+    // var path1 = that.data.touxiang;
+    // console.log(path1, "path1")
+    // //将模板图片绘制到canvas,在开发工具中drawImage()函数有问题，不显示图片
+    // var path2 = "../../imgs/tap.png";
+    // var path3 = "../../imgs/index.png";
+    // var path4 = "../../imgs/wenziBg.png";
 
     //context.drawImage(path2, 126, 186, 120, 120);
     //不知道是什么原因，手机环境能正常显示
@@ -310,13 +429,22 @@ Page({
     // context.fillText("邀请你一起去吃面", 185, 370);
     // context.stroke();
     //绘制验证码背景
-    context.drawImage(path3, 54, 300, 280, 64);
+    //context.drawImage(path3, 54, 300, 280, 64);
     //绘制code码
-    context.setFontSize(34);
-    context.setFillStyle('#333');
+    context.setFontSize(42);
+    context.setFillStyle('#fff');
     context.setTextAlign('center');
-    context.fillText(that.data.indexCode, 220, 344);
+    context.fillText("您的专属祝福语：", 425, 420);
     context.stroke();
+
+    for(let m = 0; m < t; m++) {
+      context.setFontSize(42);
+      context.setFillStyle('#fff');
+      context.setTextAlign('center');
+      context.fillText(strs[m], 425, 500 + m * 50);
+      context.stroke();
+    }
+
     // //绘制左下角文字背景图
     // context.drawImage(path4, 25, 520, 184, 82);
     // context.setFontSize(12);
@@ -342,6 +470,7 @@ Page({
     // context.clip(); //裁剪上面的圆形
     // context.drawImage(path1, 136, 196, 100, 100); // 在刚刚裁剪的园上画图
      context.draw();
+
     //将生成好的图片保存到本地，需要延迟一会，绘制期间耗时
     setTimeout(function () {
       wx.canvasToTempFilePath({
@@ -358,6 +487,11 @@ Page({
         }
       });
     }, 200);
+  },
+  hideCanvas: function() {
+    this.setData({
+      maskHidden: false
+    })
   },
   //点击保存到相册
   baocun: function () {
@@ -392,25 +526,7 @@ Page({
 
     })
   },
-  //点击生成
-  quanShare: function (e) {
-    var that = this;
-    this.setData({
-      showShare: false
-    });
-    wx.showToast({
-      title: '生成海报中...',
-      icon: 'loading',
-      duration: 1000
-    });
-    setTimeout(function () {
-      wx.hideToast()
-      that.createNewImg();
-      that.setData({
-        maskHidden: true
-      });
-    }, 1000)
-  },
+
 
   /**
    * 生命周期函数--监听页面初次渲染完成
@@ -419,31 +535,64 @@ Page({
 
   },
 
+
+
+myGetUserSQInfo({ success,  fail}){
+  var that = this;
+  wx.getSetting({
+    success: res => {
+      if (res.authSetting['scope.userInfo']) {
+        console.log('用户已经授权')
+        // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
+        wx.getUserInfo({
+          success: res => {
+            // 可以将 res 发送给后台解码出 unionId
+            app.globalData.userInfo = res.userInfo
+            console.log(app.globalData.userInfo)
+
+            this.setData({
+              name: res.userInfo.nickName,
+            })
+            typeof success == 'function' && success(that);
+            /*
+            wx.downloadFile({
+              url: res.userInfo.avatarUrl, //仅为示例，并非真实的资源
+              success: function (res) {
+                // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+                if (res.statusCode === 200) {
+                  console.log(res, "reererererer")
+                  that.setData({
+                    touxiang: res.tempFilePath
+                  })
+                }
+              }
+            })
+            */
+            // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
+            // 所以此处加入 callback 以防止这种情况
+            // if (this.userInfoReadyCallback) {
+            //   this.userInfoReadyCallback(res)
+            // }
+          }
+        })
+       
+        // return 'ok'
+      } else {
+        console.log('用户没有授权')
+        this.setData({//让用户选择区域
+          showModel: true
+        })
+        // return 'fail'
+        typeof fail == 'function' && fail(that);
+      }
+    }
+  })
+},
   /**
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-    var that = this;
-    wx.getUserInfo({
-      success: res => {
-        console.log(res.userInfo, "huoqudao le ")
-        this.setData({
-          name: res.userInfo.nickName,
-        })
-        wx.downloadFile({
-          url: res.userInfo.avatarUrl, //仅为示例，并非真实的资源
-          success: function (res) {
-            // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
-            if (res.statusCode === 200) {
-              console.log(res, "reererererer")
-              that.setData({
-                touxiang: res.tempFilePath
-              })
-            }
-          }
-        })
-      }
-    })
+
   },
 
   /**
@@ -479,7 +628,8 @@ Page({
    */
   onShareAppMessage: function (res) {
     return {
-      title: "清城发布",
+      title: "美好清城 新年快乐",
+      imageUrl: "../../imgs/share.png",
       success: function (res) {
         console.log(res, "转发成功")
       },

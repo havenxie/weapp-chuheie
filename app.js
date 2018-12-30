@@ -49,29 +49,29 @@ App({
       }
     })
    // 获取用户信息
-    wx.getSetting({
-      success: res => {
-        // console.log(2)
-        // console.log(res)
-        if (res.authSetting['scope.userInfo']) {
-          console.log(3)
-          // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
-          wx.getUserInfo({
-            success: res => {
-              
-              // 可以将 res 发送给后台解码出 unionId
-              this.globalData.userInfo = res.userInfo
+    // var that = this
+    // wx.getSetting({
+    //   success: (res) => {
+    //     if (res.authSetting['scope.userInfo']) {
+    //       console.log('用户已经授权')
+    //       //取出本地存储用户信息，解决需要每次进入小程序弹框获取用户信息
+    //       app.globalData.userInfo = wx.getStorageSync('userInfo')
+    //       console.log(app.globalData.userInfo)
 
-              // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
-              // 所以此处加入 callback 以防止这种情况
-              if (this.userInfoReadyCallback) {
-                this.userInfoReadyCallback(res)
-              }
-            }
-          })
-        }
-      }
-    })
+    //       //that.getOP(app.globalData.userInfo)
+    //       //判断用户是否已经投票开始...
+    //       //判断用户是否已经投票结束...
+
+    //     } else {
+    //       console.log('用户没有授权')
+    //       this.setData({
+    //         showModel: true
+    //       })
+    //       return
+    //     }
+    //   }
+    // }),
+
   },
   globalData: {
     userInfo: null,

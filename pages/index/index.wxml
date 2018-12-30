@@ -15,14 +15,14 @@
 <!-- --------------------------------------------------------------------------------------- -->
 <view class="container">
 <!-- 底层主界面 -->
-<image class='bgc' src="../../imgs/BGM.png" mode="scaleToFill"></image>
+<image class='bgc' src="../../imgs/bgm.png" mode="scaleToFill" height="100%" width="100%"></image>
 
 <view class="pages">
 
 
-    <image bindtap="intoButtonTap" class="intoButtonIcon" src="../../imgs/tap.png" mode="aspectFill"></image>
+    <image animation="{{animationMiddleHeaderItem}}" bindtap="intoButtonTap" class="intoButtonIcon"  src="../../imgs/heart.png" mode="aspectFill"></image>
+    <image  class="heart-txt"  src="../../imgs/heart-txt.png" mode="aspectFill"></image>
       <!-- <text class="buttonText">点击按钮支持</text> -->
-
 
 <!-- --------------------------------------------------------------------------------------- -->
 
@@ -82,11 +82,25 @@
       </scroll-view>
     </view>
   </view>
+  <!-- 输入姓名 -->
+  <view class="selectArea"  wx:if="{{!showZhenjieItems && (zhenjie != '')}}">
+    <text class='selectTxt'>姓 名</text>
+    <view class="selectBox">
+     <input class='inputInfo' focus="true" placeholder="请输入姓名" type="text" confirm-type="done" bindinput="inputName">{{myNane}}</input>      
+    </view>
+  </view>
+  <!-- 电话号码 -->
+  <view class="selectArea"  wx:if="{{(myName.length > 1) && (myName.length < 5)}}">
+    <text class='selectTxt'>电 话</text>
+    <view class="selectBox">
+      <input class='inputInfo' focus="true" placeholder="请输入电话号码" type="number" confirm-type="done" bindinput="inputNum">{{phoneNum}}</input>      
+    </view>
+  </view>
   <!-- 显示文本 -->
   <view class='tips1'></view>
-  <view class='tips2'>您提供的真实信息，将使我们的统计数据真实有效，避免刷票行为产生</view>
+  <view class='tips2'>请您提供的真实信息，中奖之后我们将会根据您提供的信息和您联系！(我们会对您的隐私进行保密哦)</view>
   <!-- 提交按钮 -->
-  <button  disabled="{{(quyu == '') || (zhenjie == '')}}" bindtap='submit' class='submit'>提交</button>
+  <button  disabled="{{!showNext}}" bindtap='submit' class='submit'>下一步</button>
 </view>
 <!-- 背景半透明状态 -->
 
@@ -97,16 +111,32 @@
 <!-- --------------------------------------------------------------------------------------- -->
 <!-- 倡议书开始 -->
 <view wx:if="{{showChangyi}}" class="modelChangyi">
-  <view class="titleChangyi">真爱宣言</view>
+  <view class="titleChangyi">美好清城 新年快乐</view>
   <scroll-view scroll-y="true" bindscrolltolower="toBottom" class="BodyChangyi">
-    <text class="bodyTxt" decode="{{true}}">尊敬的市民朋友:
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在你不离不弃的点开、点赞、转发和偶尔评论下，清城发布带着诗意、带着理想，偶尔文艺地走过了五年。当然，五年还不够，我们希望在你的陪伴下，走得更远……</text>
+    <text class="bodyTxt" decode="{{true}}">(下滑到底解锁)
+你好，2019！
+
+这座城市值得更美好的你  
+
+清晨的第一缕阳光唤醒了这座粤港澳大湾区入口处的小城，70多万（数据需核实）清城人迎来了全新一年。在这个温暖而美好的地域里，在峡江飞霞晨光照耀下，绽放出一张张笑脸。
+你好，2019。
+
+生命因环境而美好，这是清城在努力给你的未来许诺，也是我们为之奋斗的目标。
+
+1月1日，新年伊始，时序更替，生活的日常，日常的生活，愿生活在清城的你收获更多美好。
+
+清城，这座正迭代蜕变的城市，值得更美好的你！
+清城发布祝福您，2019，新年快乐！
+这一波福利送给你和你的朋友们
+再次祝福 新年快乐！
+
+清城发布</text>
     <view class='footTxt'>
         <text>清城区</text>
-        <text>2018年11月29日</text>
+        <text>2018年12月30日</text>
     </view>
   </scroll-view>
-  <button disabled="{{toBottom}}" bindtap='support' class="submit">我支持</button>
+  <button disabled="{{!toBottom}}" bindtap='support' class="submit">点击提交并参与抽奖</button>
 </view>
 <view  wx:if="{{showChangyi}}" class="mask"></view>
 <!-- 倡议书结束 -->
@@ -116,10 +146,10 @@
 <!-- 自定义分享弹窗开始 -->
 <view wx:if="{{showShare}}" class="modelShare">
   <view class='close' bindtap="closeShare"> × </view>
-  <view class="txtShare">感谢您热心支持参与,请明天再来吧！</view>
+  <view class="txtShare">你已经参与活动了，快去告诉小伙伴们吧！</view>
   <button class="iknownBtn myBtn" bindtap='closeShare'>我知道了</button>
   <button class="haoyouBth myBtn" open-type="share">分享给好友</button>
-  <button class='quanBtn myBtn' bindtap='quanShare'>生成海报</button>
+  <button class='quanBtn myBtn' bindtap='quanShare'>获取专属祝福语生成海报</button>
 </view>
 <view wx:if="{{showShare}}" class="mask"></view>
   <!-- 自定义分享弹窗结束 -->
@@ -129,13 +159,16 @@
 <!-- --------------------------------------------------------------------------------------- -->
 <!-- 生成的海报开始 -->
 <view class='imagePathBox' hidden="{{maskHidden == false}}">
-  <image src="{{imagePath}}" class='shengcheng'></image>
-  <button class='baocun' bindtap='baocun'>保存相册(保存后可发朋友圈)</button>
+<view class='imagePathBox2'>
+  <button class='hideCanvas' bindtap='hideCanvas'>X</button>
+  <image src="{{imagePath}}" class='shengcheng' mode="aspectFit"></image>
+  <button class='baocun' bindtap='baocun'>保存到相册(保存后可发朋友圈)</button>
+</view>
 </view>
 <view hidden="{{maskHidden == false}}" class="mask"></view> 
 
 <view class="canvas-box">
-  <canvas  style="width: 375px;height: 667px;position:fixed;top:9999px" canvas-id="mycanvas"/>
+  <canvas  style="width: 850px;height: 1024px;position:fixed;top:9999px" canvas-id="mycanvas"/>
 </view>  
 <!-- 生成的海报结束 -->
 <!-- --------------------------------------------------------------------------------------- -->
