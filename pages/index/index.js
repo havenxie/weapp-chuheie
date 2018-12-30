@@ -23,6 +23,9 @@ Page({
     showChangyi: false,
     toBottom: false,
     showShare: false,
+    showLeaveModel: false,
+    leaveTxt: "",
+    submitLeave: false,
     maskHidden: false,
     name: "",
     touxiang: "",
@@ -31,10 +34,36 @@ Page({
     openid: '',
     animationMiddleHeaderItem: {}
   },
-  
+  showLeaveModel() {
+    this.setData({
+      showLeaveModel: true,
+      leaveTxt: ''//清空上次留言
+    })
+  },
+  textInput(e) {
+    this.setData({
+      leaveTxt: e.detail.value
+    })
+    if(e.detail.value != "") {
+      this.setData({
+        submitLeave: true
+      })
+    } else {
+      this.setData({
+        submitLeave: false
+      })  
+    }
+  },
+  leaveBtn() {
+    this.closeShare()
+    //需要发起网络请求
+    console.log(this.data.leaveTxt)
+    this.postZhufu(this.data.leaveTxt)
+  },
   closeShare() {
     this.setData({
-      showShare: false
+      showShare: false,
+      showLeaveModel: false
     })
   },
   closeQuyu() {//点击右上角关闭按钮
@@ -117,7 +146,37 @@ Page({
       showChangyi: false
     })
     this.postArea()
-    //this.intoButtonTap()
+  },
+  postZhufu: function (msg) {
+    wx.request({
+      url: 'https://qx.sj0763.com/2018/wxapp_saoheichue/api.addmsg.php',
+      method: 'GET',
+      header: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
+      data: {
+        "msg": msg,
+        "openid": this.data.openid
+      },
+      success: function (res) {
+        // console.log(res)
+        if (res.data.code == 200 && res.data.desc == "ok") {
+          wx.showToast({
+            icon: 'success',
+            title: '留言提交成功~',
+          })
+        } else {
+          wx.showToast({
+            icon: 'none',
+            title: '留言提交失败',
+          })
+        }
+      },
+      fail: function (err) {
+        wx.showToast({
+          icon: 'none',
+          title: '留言提交失败，重启一下试试呗~',
+        })
+      }
+    })   
   },
   postArea: function (res) {//提交用户信息 获取用户id
     let that = this
@@ -132,7 +191,7 @@ Page({
     // console.log(nickname)
     // console.log(thisopenid)
     // console.log("18056113210")
-     console.log("saoheichue2018" + thisaddr + name + nickname + thisopenid + phonenum)
+    //  console.log("saoheichue2018" + thisaddr + name + nickname + thisopenid + phonenum)
     // console.log(util.hexMD5("saoheichue2018" + thisaddr + name + nickname + thisopenid + phonenum))
     wx.request({
       url: 'https://qx.sj0763.com/2018/wxapp_saoheichue/api.updateinfo.php',
@@ -149,7 +208,7 @@ Page({
       success: function (res) {
         console.log(res)
         if (res.data.code == 200) {
-          console.log('提交用户信息成功')
+          // console.log('提交用户信息成功')
           var zhongjiang = res.data.winning
           if (zhongjiang == '0') {//很遗憾没有中奖
             wx.showModal({
@@ -182,7 +241,10 @@ Page({
             })
           }
         } else {
-          console.log("接口访问错误~")
+          wx.showToast({
+            icon: 'none',
+            title: '网络访问出错了呢，重启一下试一试吧~',
+          })
         }
       }
     })
@@ -207,7 +269,7 @@ Page({
         "hash": util.hexMD5("saoheichue2018" + app.globalData.code)
       },
       success: function (res) {
-        console.log(res)
+        // console.log(res)
         if (res.data.code == 200) {
           that.setData({
             joined: res.data.joined,
@@ -215,18 +277,19 @@ Page({
             openid: res.data.openid
           })
           if (res.data.joined == 1) {//已经投票过了
-            console.log("已经投票了")
             that.setData({//生成海报
               showShare: true
             })
           } else {//还没有投票
-            console.log('还没有投票')
             that.setData({//需要打开获取信息的弹窗
               showPicker: true
             })
           }
         } else {
-          console.log("接口访问错误~")
+          wx.showToast({
+            icon: 'none',
+            title: '网络访问出错了呢，重启一下试一试吧~',
+          })
         }
       }
     })
@@ -235,7 +298,7 @@ Page({
   intoButtonTap: function() {
     wx.login({
       success: res => {
-        console.log(res)
+        // console.log(res)
         app.globalData.code = res.code
         //取出本地存储用户信息，解决需要每次进入小程序弹框获取用户信息
         app.globalData.userInfo = wx.getStorageSync('userInfo')
@@ -245,9 +308,7 @@ Page({
           success: (res) => {
             //判断用户已经授权。不需要弹框
             if (res.authSetting['scope.userInfo']) {
-              //用户已经授权
               //将code提交给后台 检查是否已经投票成功 如果成功就生成海报 如果没投票就弹出选择呢区域的模态框              
-              console.log("开始将code提交给后台")
               that.getOP(app.globalData.userInfo)
             } else {//没有授权需要弹框
               this.setData({
@@ -327,15 +388,15 @@ Page({
 
     this.myGetUserSQInfo({
       success: res => {
-        console.log(1)
+        // console.log(1)
       },
       fail: res => {
-        console.log(2)
+        // console.log(2)
       }
     })
   },
   getUserInfo: function(e) {
-    console.log(e)
+    // console.log(e)
     app.globalData.userInfo = e.detail.userInfo
     this.setData({
       userInfo: e.detail.userInfo,
@@ -505,19 +566,21 @@ Page({
           confirmText: '好的',
           confirmColor: '#333',
           success: function (res) {
-            if (res.confirm) {
-              console.log('用户点击确定');
+            if (res.confirm) {//用户点击确定
               /* 该隐藏的隐藏 */
               that.setData({
                 maskHidden: false
               })
             }
-          }, fail: function (res) {
-            console.log(11111)
-          }
+          }, 
+          fail: function (res) {}
         })
       },
       fail: function() {
+        wx.showToast({
+          icon: 'none',
+          title: '图片保存失败了，很遗憾，再试一次吧！',
+        })
         that.setData({
           maskHidden: false,
           canvasHidden: false
@@ -542,13 +605,12 @@ myGetUserSQInfo({ success,  fail}){
   wx.getSetting({
     success: res => {
       if (res.authSetting['scope.userInfo']) {
-        console.log('用户已经授权')
         // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
         wx.getUserInfo({
           success: res => {
             // 可以将 res 发送给后台解码出 unionId
             app.globalData.userInfo = res.userInfo
-            console.log(app.globalData.userInfo)
+            // console.log(app.globalData.userInfo)
 
             this.setData({
               name: res.userInfo.nickName,
@@ -578,7 +640,7 @@ myGetUserSQInfo({ success,  fail}){
        
         // return 'ok'
       } else {
-        console.log('用户没有授权')
+        // console.log('用户没有授权')
         this.setData({//让用户选择区域
           showModel: true
         })
@@ -631,10 +693,15 @@ myGetUserSQInfo({ success,  fail}){
       title: "美好清城 新年快乐",
       imageUrl: "../../imgs/share.png",
       success: function (res) {
-        console.log(res, "转发成功")
+        wx.showToast({
+          title: '转发成功！',
+        })
       },
       fail: function (res) {
-        console.log(res, "转发失败")
+        wx.showToast({
+          icon: 'none',
+          title: '转发失败',
+        })
       }
     }
   }
