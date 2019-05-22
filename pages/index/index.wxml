@@ -1,4 +1,4 @@
-<!--index.wxml-->
+﻿<!--index.wxml-->
 <!-- <view class="container">
   <view class="userinfo">
     <button wx:if="{{!hasUserInfo && canIUse}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo"> 获取头像昵称 </button>
@@ -70,7 +70,7 @@
       </view>
       <!-- 下拉需要显示的列表 -->
       <scroll-view scroll-y="true" style="height: 400%" class="selectItems" wx:if="{{showZhenjieItems}}">
-          <view class="selectItem" catchtap="selectZhenjie" data-name="凤城街道">区直单位</view>
+          <view class="selectItem" catchtap="selectZhenjie" data-name="区直单位">区直单位</view>
           <view class="selectItem" catchtap="selectZhenjie" data-name="凤城街道">凤城街道</view>
           <view class="selectItem" catchtap="selectZhenjie" data-name="东城街道">东城街道</view>
           <view class="selectItem" catchtap="selectZhenjie" data-name="洲心街道">洲心街道</view>
